@@ -17,10 +17,10 @@ function draw(){
     drawChart("B08301010","percent")
     drawChart("B23025005","percent")
     
-    drawChart("16002002","percent")
-    drawChart("16002003","percent")
-    drawChart("16002006","percent")
-    drawChart("16002009","percent")
+    drawChart("B16002002","percent")
+    drawChart("B16002003","percent")
+    drawChart("B16002006","percent")
+    drawChart("B16002009","percent")
 }
 
 function drawBaseMap(width,height,center){
@@ -61,8 +61,8 @@ function drawBaseMap(width,height,center){
 function drawChart(columnCode,type){
     var formatted = returnColumnData(columnCode,type)
     var width = window.innerWidth
-    var height = 100
-    var margin = 25
+    var height = 160
+    var margin = 40
     var svg = d3.select("#chart").append("svg").attr("width",width).attr("height",height)
     svg.append("text").text(getTitle(columnCode)).attr("x",margin).attr("y",30).attr("font-size",12)
     
@@ -71,7 +71,13 @@ function drawChart(columnCode,type){
         .scale(xScale)
         .orient("bottom")
         .ticks(10)
-        .tickFormat(function(d) { return d+"%"; })
+        .tickFormat(function(d) { 
+            if(type == "percent"){
+                return d+"%";}
+                else{
+                    return d
+                }
+            })
     
     svg.append("g")
         .attr("class", "x axis")
@@ -86,15 +92,29 @@ function drawChart(columnCode,type){
     .attr("x",function(d){
         return xScale(formatted[d].value)
     })
-    .attr("y", height/2)
-    .attr("height",height/4)
+    .attr("y", function(d){
+        var geoid = d.split("US")[1]
+        if(pub.neighborSteps["_0"].indexOf(geoid)>-1){
+            return height/4
+        }else{
+            return height/2
+        }
+    })
+    .attr("height",function(d){
+        var geoid = d.split("US")[1]
+        if(pub.neighborSteps["_0"].indexOf(geoid)>-1){
+            return height/2
+        }else{
+            return height/4
+        }
+    })
     .attr("width",2)
     .attr("opacity",function(d){
         var geoid = d.split("US")[1]
         if(pub.neighborSteps["_0"].indexOf(geoid)>-1){
             return 1
         }else{
-            return .8
+            return .5
         }
     })
     .attr("fill",function(d){
@@ -110,7 +130,7 @@ function drawChart(columnCode,type){
         }
         //var colors = {n0:"#cb5b4c",n1:"#4c9c47",n2:"#56ba5c",n3:"#70cf50"}
         //var colors = {n0:"#cb5b4c",n1:"#000",n2:"#888",n3:"#aaa"}
-        var colors = {n0:"red",n1:"orange",n2:"yellow",n3:"green"}
+        var colors = {n0:"#ce1d2f",n1:"	#f45c38",n2:"	#f5ce41",n3:"green"}
         
         var color = colors[className]
         return color
