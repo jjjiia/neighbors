@@ -32,31 +32,31 @@ function drawTracts(){
     drawMapLayer(pub["geoData"])
     var svg = d3.select("#chart").append("div").html("Race").attr("font-size",24).attr("class","chartTitle")    
     
-    histogramSetup("B02001002","percent")
-    histogramSetup("B02001003","percent")
-    histogramSetup("B02001004","percent")
-    histogramSetup("B02001005","percent")
+    histogramSetup("B02001002","percent","#56c253")
+    histogramSetup("B02001003","percent","#56c253")
+    histogramSetup("B02001004","percent","#56c253")
+    histogramSetup("B02001005","percent","#56c253")
     
     var svg = d3.select("#chart").append("div").html("Education Attainment").attr("font-size",24).attr("class","chartTitle")    
-    histogramSetup("B15003022","percent")
+    histogramSetup("B15003022","percent","#2a5ed9")
     var svg = d3.select("#chart").append("div").html("Means of Transportation to Work").attr("font-size",24).attr("class","chartTitle")    
-    histogramSetup("B08301010","percent")
+    histogramSetup("B08301010","percent","#ed8701")
     var svg = d3.select("#chart").append("div").html("Employment Status").attr("font-size",24).attr("class","chartTitle")    
-    histogramSetup("B23025005","percent")
+    histogramSetup("B23025005","percent","#4fe498")
     
     
     var svg = d3.select("#chart").append("div").html("Language Spoken at Home").attr("font-size",24).attr("class","chartTitle")    
-    histogramSetup("B16002002","percent")
-    histogramSetup("B16002003","percent")
-    histogramSetup("B16002006","percent")
-    histogramSetup("B16002009","percent")
+    histogramSetup("B16002002","percent","#7f21a2")
+    histogramSetup("B16002003","percent","#7f21a2")
+    histogramSetup("B16002006","percent","#7f21a2")
+    histogramSetup("B16002009","percent","#7f21a2")
 }
-function histogramSetup(code,type){
+function histogramSetup(code,type,fill){
     var svg = d3.select("#chart").append("div").html(getTitle(code)).attr("font-size",12).attr("class","chartTitle")
     var formatted = returnColumnData(code,type)
     var histoData = formatAsHistogram(formatted)
  //   drawHistogram(histoData,code)
-    drawHistoBar(histoData,code)
+    drawHistoBar(histoData,code,fill)
 }
 
 
@@ -193,9 +193,9 @@ function getPercent(code,geoId){
     var percent = codeValue/totalValue*100
     return percent
 }
-function drawHistoBar(histoData,code){
+function drawHistoBar(histoData,code,fill){
     var width = window.innerWidth
-    var height = 120
+    var height = 200
     var margin = 40
     var svg = d3.select("#chart").append("svg").attr("width",width).attr("height",height)
   //  svg.append("text").text(getTitle(columnCode)).attr("x",margin).attr("y",30).attr("font-size",12)
@@ -215,7 +215,7 @@ function drawHistoBar(histoData,code){
         .attr("y",2)
         .attr("width",xScale(.85))
         .attr("height",height-margin)
-        .attr("fill","#000")
+        .attr("fill",fill)
         .attr("transform", "translate(0,0)")
     var xAxis = d3.svg.axis()
         .scale(xScale)
@@ -224,6 +224,7 @@ function drawHistoBar(histoData,code){
         .tickFormat(function(d) { 
             return d+"%"
         })
+    svg.append("text").text("Percent of Population").attr("transform", "translate(50,"+(height)+")").attr("font-size",14)
     svg.append("g")
         .attr("class", "x axis")
         .attr("transform", "translate(0,"+(height-margin)+")")
@@ -234,12 +235,12 @@ function drawHistoBar(histoData,code){
     svg.append("rect")
         .attr("x",xScale(mainValue))
         .attr("y",2)
-        .attr("width",2)
+        .attr("width",4)
         .attr("height",height-margin)
-        .attr("fill","red")
-    svg.append("text").text("you are here").attr("fill","red").attr("font-size",16)
-        .attr("x",xScale(mainValue)+5)
-        .attr("y",20)
+        .attr("fill","#000")
+    svg.append("text").text("you are here").attr("fill","#000").attr("font-size",24)
+        .attr("x",xScale(mainValue)+12)
+        .attr("y",40)
 }
 function drawHistogram(histoData,code){
     console.log(histoData)
@@ -296,12 +297,12 @@ function drawHistogram(histoData,code){
     svg.append("rect")
         .attr("x",xScale(mainValue))
         .attr("y",2)
-        .attr("width",2)
+        .attr("width",4)
         .attr("height",height-margin)
-        .attr("fill","red")
+        .attr("fill","#000")
         
-    svg.append("text").text("you are here").attr("fill","red").attr("font-size",16)
-        .attr("x",xScale(mainValue)+5)
+    svg.append("text").text("you are here").attr("fill","#000").attr("font-size",16)
+        .attr("x",xScale(mainValue)+8)
         .attr("y",20)
 }
 function formatAsHistogram(data){
