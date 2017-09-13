@@ -12,7 +12,7 @@ function formatLocation(position){
     var lat = position.coords.latitude        
     var alt = position.coords.altitude 
     pub.coordinates = [lat,lng]
-    d3.select("#coordinates").html("<strong>Lat:</strong> "+Math.round(lat*1000000)/1000000+" <strong>Lng:</strong> "+Math.round(lng*10000)/10000+" <strong>Alt:</strong> "+Math.round(alt*1000000)/1000000)//+"<br/>"+speed+"<br/>"+alt+"<br/>"+heading)
+    d3.select("#coordinates").html("<strong>Lat:</strong> "+Math.round(lat*1000000)/1000000+" <strong>Lng:</strong> "+Math.round(lng*10000)/10000)//+" <strong>Alt:</strong> "+Math.round(alt*1000000)/1000000)//+"<br/>"+speed+"<br/>"+alt+"<br/>"+heading)
     return [lat,lng]
 }
 
