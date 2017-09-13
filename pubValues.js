@@ -13,6 +13,7 @@ var pub = {
     stepCounter:0,
     geoData:[],
     data:[],
+    censusTractId:null,
     tables:"B02001,B01002,B19013,B15003,B08301,B23025,B16002"
 }
 

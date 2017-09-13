@@ -61,50 +61,72 @@ function getNeighbors(steps,geoid){
             }
         }
     }
-    return pub.neighborSteps["_0"].concat(pub.neighborSteps["_1"]).concat(pub.neighborSteps["_2"])//.concat(pub.neighborSteps["_3"])
+    return pub.neighborSteps["_0"].concat(pub.neighborSteps["_1"])//.concat(pub.neighborSteps["_2"])//.concat(pub.neighborSteps["_3"])
 }
 
 function formatCensusIds(json){
     var blockGroupid = "15000US"+json.Block.FIPS.slice(0,12)
+    pub.censusTractId = "14000US"+json.Block.FIPS.slice(0,11)
     d3.select("#censusLabelFCC").html("<strong>Block Group:</strong> "+blockGroupid)
     pub.censusId = blockGroupid
 
     var listOfNeighbors = getNeighbors(4,json.Block.FIPS.slice(0,12))
+    var formattedList = []
+   // for(var n in listOfNeighbors){
+   //     var formattedId = "15000US"+listOfNeighbors[n]
+   //     formattedList.push(formattedId)
+   // }
+     var county = "04000US"+json.County.FIPS
   //  console.log(listOfNeighbors)
   //  var neighbors = pub.allNeighbors[json.Block.FIPS.slice(0,12)].split(",")
-    getDataNeighbors(blockGroupid,listOfNeighbors)
+   // getDataNeighbors(blockGroupid,listOfNeighbors)
+    getTracksInCounty(county,blockGroupid)
 }
 function getValue(code,geoId){
     var table = code.substr(0, code.length -3)    
     var codeValue = pub["data"][geoId].data[geoId][table].estimate[code]
     return codeValue
 }
+
+function getTracksInCounty(county,blockGroupid){
+  //  var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+"B02001"+"&geo_ids=140|"+county
+    var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+pub.tables+"&geo_ids=140|"+county
+    $.getJSON(censusReporter, function(tractData) {
+        //console.log(tractData)
+         pub["data"]=tractData 
+         var blockGeoRequest = "https://api.censusreporter.org/1.0/geo/tiger2015/"+pub.censusId+"?geom=true"
+         $.getJSON( blockGeoRequest, function(blockGeoData) {
+             
+            pub["geoData"][blockGroupid]=blockGeoData
+            drawTracts()
+         })
+    })
+}
 function getDataNeighbors(geoid,neighbors){
     var geoid = "15000US"+neighbors[pub.neighborCounter]
-    var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+pub.tables+"&geo_ids="+geoid
-    $.getJSON(censusReporter, function(blockGroupData) {
-       // pub.data[geoid]=blockGroupData
-      //  console.log(blockGroupData)
-        var populationCode = "B02001001"
-        var table = populationCode.substr(0, populationCode.length -3) 
-        var totalPopulation = blockGroupData.data[geoid][table].estimate[populationCode]
-        if(totalPopulation >0){
-           // console.log("population: "+totalPopulation)
-            pub.data[geoid]=blockGroupData
-            var blockGeoRequest = "https://api.censusreporter.org/1.0/geo/tiger2015/"+geoid+"?geom=true"
-            $.getJSON( blockGeoRequest, function(blockGeoData) {
-                pub["geoData"][geoid]=blockGeoData
-                if(pub.neighborCounter==neighbors.length-1){
-                    draw()
-                    return
-                }
-                pub.neighborCounter+=1
-                getDataNeighbors(pub.censusId,neighbors)            
-            }); 
-        }else{
-                pub.neighborCounter+=1
-                getDataNeighbors(pub.censusId,neighbors) 
-        }
-        
+   var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+pub.tables+"&geo_ids="+geoid
+        $.getJSON(censusReporter, function(blockGroupData) {
+           // pub.data[geoid]=blockGroupData
+          //  console.log(blockGroupData)
+            var populationCode = "B02001001"
+            var table = populationCode.substr(0, populationCode.length -3) 
+            var totalPopulation = blockGroupData.data[geoid][table].estimate[populationCode]
+            if(totalPopulation >0){
+               // console.log("population: "+totalPopulation)
+                pub.data[geoid]=blockGroupData
+                var blockGeoRequest = "https://api.censusreporter.org/1.0/geo/tiger2015/"+geoid+"?geom=true"
+                $.getJSON( blockGeoRequest, function(blockGeoData) {
+                    pub["geoData"][geoid]=blockGeoData
+                    if(pub.neighborCounter==neighbors.length-1){
+                        draw()
+                        return
+                    }
+                    pub.neighborCounter+=1
+                    getDataNeighbors(pub.censusId,neighbors)            
+                }); 
+            }else{
+                    pub.neighborCounter+=1
+                    getDataNeighbors(pub.censusId,neighbors) 
+            }
     });
 }
