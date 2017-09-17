@@ -98,7 +98,7 @@ function getTracksInCounty(county,blockGroupid){
          $.getJSON( blockGeoRequest, function(blockGeoData) {
              
             pub["geoData"][blockGroupid]=blockGeoData
-            drawTracts()
+            setMatrix()
          })
     })
 }

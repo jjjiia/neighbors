@@ -73,5 +73,5 @@ path {
 .major_road { stroke: #aaa;  }
 .minor_road { stroke: #bbb; }
 .highway { stroke: #ccc; stroke-width: 1.5px; }
-
+#geoids{padding:20px;}
 .location{fill:#000;}
