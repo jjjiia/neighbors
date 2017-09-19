@@ -3,38 +3,145 @@ function setMatrix(){
     var height = window.innerWidth
     var center = [Math.round(pub.coordinates[1]*10000)/10000,Math.round(pub.coordinates[0]*10000)/10000]
     
-    var svg = d3.select("#map").append("svg").attr("width",width).attr("height",height)
-    drawBaseMap(width,height,center)
-    drawMapLayer(pub["geoData"])
+   /// var svg = d3.select("#map").append("svg").attr("width",width).attr("height",height)
+   // drawBaseMap(width,height,center)
     
-    
-//    var colorScale = d3.scale.linear().domain([0,100]).range(["yellow","red"])
-//    var key = d3.select("#chart").append("svg").attr("width",100).attr("height",100)
-//    key
-//        .data([0,20,40,60,80,100])
-//        .enter().append("rect")
-//        .attr("x",10).attr("y",function(d,i){return i*12})
-//        .attr("width",10).attr("height",10)
-//        .attr("fill",function(d){
-//            return "red"
-//            return (colorScale(d*20))
-//        })
+    fitProjection()
+    d
+    var formattedData = formatMatrixData()
+  //  var differenceData = getDifferences(formattedData)
+  //  drawDotMatrix(differenceData)
+    drawBarGraph(colorDictionary,formattedData)
+}
 
-    var doNotInclude = []
-
-    var matrixData = formattMatrix(returnColumnData("B02001002","percent"))
-    drawMatrix(matrixData,"B02001002")    
-    var matrixData = formattMatrix(returnColumnData("B02001003","percent"))
-    drawMatrix(matrixData,"B02001003")
-    var matrixData = formattMatrix(returnColumnData("B02001004","percent"))
-    drawMatrix(matrixData,"B02001004")
+function drawBarGraph(colorDictionary,formattedData){
+    var gridSize = 40
+    var chart = d3.select("#chart").append("svg").attr("width",width).attr("height",height)
+    console.log(formattedData)
+}
+function drawDotMatrix(differenceData){
+    var gridSize = 40
+    var locationKeys = Object.keys(differenceData)
+    var columnKeys = Object.keys(differenceData[locationKeys[0]])
+    var width = (locationKeys.length+8)*gridSize
+    var height = (columnKeys.length+2)*gridSize
+    var chart = d3.select("#chart").append("svg").attr("width",width).attr("height",height)
+  //  console.log(locationKeys)
+ //   console.log(columnKeys)
+    var rScale = d3.scale.linear().domain([1,90]).range([3,gridSize*.8])
+    //chart.append("circle").attr("cx",30).attr("cy",20).attr("r",30).attr("fill","red")
     
-    drawMatrix(formattMatrix(returnColumnData("B02001005","percent")),"B02001005")
-    drawMatrix(formattMatrix(returnColumnData("B15003022","percent")),"B15003022")
-    drawMatrix(formattMatrix(returnColumnData("B08301010","percent")),"B08301010")
-    drawMatrix(formattMatrix(returnColumnData("B16002002","percent")),"B16002002")
-    drawMatrix(formattMatrix(returnColumnData("B16002003","percent")),"B16002003")
-    drawMatrix(formattMatrix(returnColumnData("B23025005","percent")),"B23025005")
+    chart.selectAll("text")
+        .data(columnKeys)
+        .enter()
+        .append("text")
+        .text(function(d){return getTitle(d)})
+        .attr("x",0)
+        .attr("y",function(d,i){return i*gridSize+5})
+        .attr("font-size",11)
+        .attr("text-anchor","end")
+        .attr("transform", "translate("+gridSize*5.5+","+gridSize+")")
+        
+    for(var j in locationKeys){
+        var geoid = locationKeys[j]
+        chart.selectAll("._text"+geoid)
+            .data(columnKeys)
+            .enter()
+            .append("text")
+            .attr("class","_text"+geoid)
+            .attr("x",function(d,i){
+                return j*gridSize
+            })
+            .attr("y",function(d,i){
+                return i*gridSize+5
+            })
+            .text(function(d){
+                if(Math.round(differenceData[geoid][d])==0){
+                    return ""
+                }else{
+                    return Math.round(differenceData[geoid][d])
+                }
+            })
+            .attr("transform", "translate("+gridSize*6+","+gridSize+")")
+            .attr("font-size",10)
+            .attr("text-anchor","middle")
+            
+        chart.selectAll("._"+geoid)
+            .data(columnKeys)
+            .enter()
+            .append("circle")
+            .attr("class","_"+geoid)
+            .attr("fill","red")
+            .attr("cx",function(d,i){
+                return j*gridSize
+            })
+            .attr("cy",function(d,i){
+                return i*gridSize
+            })
+            .attr("r",function(d){
+                return rScale(differenceData[geoid][d])
+            })
+            .attr("transform", "translate("+gridSize*6+","+gridSize+")")
+            .on("mouseover",function(){
+                d3.select(this).attr("opacity",.1)
+            })
+            .on("mouseout",function(){
+                d3.select(this).attr("opacity",1)
+            })
+    }
+}
+function formatMatrixData(){
+    var doNotInclude = ["B01002000.5","B01002002","B01002003","B02001001","B02001006","B02001007","B02001008","B02001009","B02001010"]
+    var percentCodes = ["B23025004","B23025006","B16002003","B16002002","B16002006","B16002009","B15003022","B15003023","B15003025","B02001002","B02001003","B02001004","B02001005","B08301002","B08301010","B08301021","B08301018","B08301019"]
+    var valueCodes = ["B19013001"]
+    var neighbors = pub.allNeighbors[pub.censusTractId.split("US")[1]]    
+    var matrixDictionary = {}
+    for(var d in pub["data"]["data"]){
+        var area = d
+        matrixDictionary[area]={}
+        var areaData = pub["data"]["data"][d]
+        for(var t in areaData){
+            var tableData = areaData[t]["estimate"]
+            var table = t
+           // matrixDictionary[area][table]={}
+            for(var c in tableData){
+                var columnData = tableData[c]
+                var column = c
+                if(percentCodes.indexOf(column)>-1){
+                    matrixDictionary[area][column]=getPercent(column,area)
+                }else if(valueCodes.indexOf(column)>-1) {
+                    matrixDictionary[area][column]=getValue(column,area)
+                }                  
+            }
+        }
+    }
+    return matrixDictionary
+}
+function getDifferences(formattedData){
+    var valueCodes = ["B01002001","B19013001"]
+    var here = formattedData[pub.censusTractId]
+    var differenceData = {}
+    for(var i in formattedData){
+        var locationData = formattedData[i]
+        var geoid = i
+        differenceData[geoid]={}
+        for(var j in locationData){
+            var code = j
+            if(valueCodes.indexOf(code)>-1){
+                var value = locationData[code]
+                var hereValue = here[code]
+                var difference = Math.abs(value-hereValue)
+                var percentDifference = difference/hereValue
+                differenceData[geoid][code]=percentDifference
+            }else{
+                var value = locationData[code]
+                var hereValue = here[code]
+                var difference = Math.abs(value-hereValue)
+                differenceData[geoid][code]=difference
+            }
+        }
+    }
+  return differenceData
 }
 function formattMatrix(data){
     console.log("format matrix data")
@@ -150,7 +257,11 @@ function getPercent(code,geoId){
     var codeValue = pub["data"].data[geoId][table].estimate[code]
     var totalCode = table+"001"
     var totalValue = pub["data"].data[geoId][table].estimate[totalCode]
-    var percent = codeValue/totalValue*100
+    if(codeValue==0){
+        var percent = 0
+    }else{
+        var percent = codeValue/totalValue*100
+    }
     return percent
 }
 function formatPercents(percent){
@@ -215,91 +326,3 @@ function returnColumnData(columnCode,type){
     return columnData
 }
 
-function drawBaseMap(width,height,center){
-
-    var tiler = d3.geo.tile()
-        .size([width, height]);
-
-    var projection = d3.geo.mercator()
-        .center(center)
-        .scale((1 << 21) / 2 / Math.PI)
-        .translate([width / 2, height / 2]);
-
-    var path = d3.geo.path()
-        .projection(projection);
-
-    var svg = d3.select("#map svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    svg.selectAll("g")
-        .data(tiler
-          .scale(projection.scale() * 2 * Math.PI)
-          .translate(projection([0, 0])))
-      .enter().append("g")
-        .each(function(d) {
-          var g = d3.select(this);
-          d3.json("https://vector.mapzen.com/osm/roads/" + d[2] + "/" + d[0] + "/" + d[1] + ".json?api_key=vector-tiles-LM25tq4", function(error, json) {
-            if (error) throw error;
-
-            g.selectAll("path")
-              .data(json.features.sort(function(a, b) { return a.properties.sort_key - b.properties.sort_key; }))
-            .enter().append("path")
-              .attr("class", function(d) { return d.properties.kind+" basemap"; })
-              .attr("d", path);
-          });
-        });
-}
-function drawMapLayer(data){
-    var svg = d3.select("#map svg")
-
-    var width = window.innerWidth
-    var height = window.innerWidth    
-    var center = [pub.coordinates[1],pub.coordinates[0]]
-    var lat = center[1]
-    var lng = center[0]
-    
-    var projection = d3.geo.mercator()
-        .scale((1 << 21) / 2 / Math.PI)
-    .center(center)		    
-        .translate([width/2,height/2])
-
-        //d3 geo path uses projections, it is similar to regular paths in line graphs
-    var path = d3.geo.path().projection(projection);
-    var lineFunction = d3.svg.line()
-        .x(function(d){
-            return projection([d[0],d[1]])[0]
-        })
-        .y(function(d){
-           // console.log(projection([d[0],d[1]])[1])
-            return projection([d[0],d[1]])[1]})
-            .interpolate("linear");
-        //push data, add path
-        //[topojson.object(geoData, geoData.geometry)]   
-    
-        for(var i in data){
-            var geoid = data[i].properties["full_geoid"].split("US")[1]
-            if(pub.neighborSteps["_0"].indexOf(geoid)>-1){
-                var className = "n0"
-            }else if(pub.neighborSteps["_1"].indexOf(geoid)>-1){
-                var className = "n1"
-            }else if(pub.neighborSteps["_2"].indexOf(geoid)>-1){
-                var className = "n2"
-            }else if(pub.neighborSteps["_3"].indexOf(geoid)>-1){
-                var className = "n3"
-            }
-            var colors = {n0:"red",n1:"orange",n2:"yellow",n3:"green"}
-            
-            var color = colors[className]
-        	svg.append("path")
-                .attr("class",className)
-                .attr("d",lineFunction(pub["geoData"][i].geometry.coordinates[0]))
-                //.attr("stroke","#fff")
-                //.attr("stroke-width",2)
-                .attr("fill",function(d){
-                    return color
-                    return "none"
-                }) 
-                .attr("opacity",.6)    
-        }
-}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<svg width="960" height="720"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var svg = d3.select("svg"),
+    width = window.innerWidth,
+    height = window.innerHeight;
+    
+var file = "tract_geojson/01003010100.json"
+
+d3.json(file, function(error, us) {
+  if (error) throw error;
+  console.log(us)
+
+  var conus = {type:"FeatureCollection",features:[us]}
+  
+console.log(conus)
+  // ESRI:102004
+  var path = d3.geoPath()
+      .projection(d3.geoConicConformal()
+          .parallels([33, 45])
+          .rotate([96, -39])
+          .fitSize([width, height], conus));
+
+  svg.append("path")
+      .datum(conus)
+      .attr("d", path);
+});
+
+</script>

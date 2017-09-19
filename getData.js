@@ -20,7 +20,7 @@ function usePosition(position) {
     var latLng = formatLocation(position)
     var lat = latLng[0]
     var lng = latLng[1]
-    var fccUrl = "https://data.fcc.gov/api/block/2010/find?format=jsonp&latitude="+lat+"&longitude="+lng       
+    var fccUrl = "https://data.fcc.gov/api/block/2010/find?format=jsonp&latitude="+lat+"&longitude="+lng     
     getCensusId(fccUrl,"jsonp","formatCensusIds")
 }
 
@@ -70,7 +70,7 @@ function formatCensusIds(json){
     d3.select("#censusLabelFCC").html("<strong>Block Group:</strong> "+blockGroupid)
     pub.censusId = blockGroupid
 
-    var listOfNeighbors = getNeighbors(4,json.Block.FIPS.slice(0,12))
+  //  var listOfNeighbors = getNeighbors(4,json.Block.FIPS.slice(0,12))
     var formattedList = []
    // for(var n in listOfNeighbors){
    //     var formattedId = "15000US"+listOfNeighbors[n]
@@ -78,9 +78,13 @@ function formatCensusIds(json){
    // }
      var county = "04000US"+json.County.FIPS
   //  console.log(listOfNeighbors)
-  //  var neighbors = pub.allNeighbors[json.Block.FIPS.slice(0,12)].split(",")
+    var neighbors = pub.allNeighbors[json.Block.FIPS.slice(0,11)]//.split(",")
+   var neighborList = neighbors.split(",")   
+   pub.allNeighbors = neighborList
+
    // getDataNeighbors(blockGroupid,listOfNeighbors)
-    getTracksInCounty(county,blockGroupid)
+   var formattedNeighbors = pub.censusTractId+",14000US"+neighbors.split(",").join(",14000US")
+    getTracksInCounty(county,pub.censusTractId,formattedNeighbors)
 }
 function getValue(code,geoId){
     var table = code.substr(0, code.length -3)    
@@ -88,19 +92,18 @@ function getValue(code,geoId){
     return codeValue
 }
 
-function getTracksInCounty(county,blockGroupid){
+function getTracksInCounty(county,tractid,neighbors){
+//    var blockGeoRequest = "https://api.censusreporter.org/1.0/geo/tiger2015/"+pub.censusTractId+"?geom=true"
+//    $.getJSON( blockGeoRequest, function(blockGeoData) {
+//       pub["geoData"][pub.censusTractId]=blockGeoData
+        var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+pub.tables+"&geo_ids="+neighbors
+        $.getJSON(censusReporter, function(tractData) {
+             pub["data"]=tractData 
+             setMatrix()
+        })        
+//    })
   //  var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+"B02001"+"&geo_ids=140|"+county
-    var censusReporter = "https://api.censusreporter.org/1.0/data/show/latest?table_ids="+pub.tables+"&geo_ids=140|"+county
-    $.getJSON(censusReporter, function(tractData) {
-        //console.log(tractData)
-         pub["data"]=tractData 
-         var blockGeoRequest = "https://api.censusreporter.org/1.0/geo/tiger2015/"+pub.censusId+"?geom=true"
-         $.getJSON( blockGeoRequest, function(blockGeoData) {
-             
-            pub["geoData"][blockGroupid]=blockGeoData
-            setMatrix()
-         })
-    })
+    
 }
 function getDataNeighbors(geoid,neighbors){
     var geoid = "15000US"+neighbors[pub.neighborCounter]
