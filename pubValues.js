@@ -16,7 +16,7 @@ var pub = {
     tables:"B02001,B01002,B19013,B15003,B08301,B23025,B16002",
     actualNeighborGeos:null,
     centroid:null,
-    colors:["#459d3e","#e3e039","#657348","#82e03e","#bbd1a1","#9eb531","#79df77","#b6a75a","#d2e27a","#6d8635"],
+    colors:["#7cbc24","#42c628","#9fa67f","#49c051","#547448","#aeb033","#328d46","#9e943d","#67be6c","#547724","#86b13b","#86ad67","#41932d"],
     colorDictionary:{}
 }
 

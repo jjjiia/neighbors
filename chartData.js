@@ -1,6 +1,5 @@
 function setupCharts(censusData){
 //    console.log(censusData)
-    setColorKey()
     var formattedData = formatBarData(formatMatrixData())
     for(var i in formattedData){
         drawBarGraph(formattedData[i],i)
@@ -20,7 +19,7 @@ function setColorKey(){
 function drawBarGraph(data,i){
     
     var gridSize = 25
-    var width = gridSize*(Object.keys(data.values).length+3)
+    var width = d3.max([gridSize*(Object.keys(data.values).length+3),250])
     
     var height = 150
     var chart = d3.select("#chart")
@@ -42,7 +41,18 @@ function drawBarGraph(data,i){
     .attr("width",gridSize-4)
     .attr("height",function(d){return yScale(d.value)})
     .attr("fill",function(d,i){return pub.colorDictionary[d.area.split("US")[1]]})
-    .attr("class",function(d){return d.area})
+    .attr("class",function(d){return "_"+d.area.split("US")[1]})
+        .attr("opacity",.5)
+    .on("mouseover",function(d){
+        var id = d3.select(this).attr("class")
+        console.log(id)
+        //d3.selectAll("rect").attr("opacity",.2)
+        d3.selectAll("."+id).attr("opacity",1)
+    })
+    .on("mouseout",function(d){
+        d3.selectAll("rect").attr("opacity",.5)
+        d3.selectAll(".areas").attr("opacity",.2)
+    })
         
     chart.selectAll(".barLabel")
         .data(sorted)
