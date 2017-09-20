@@ -6,5 +6,5 @@ function dataDidLoad(error,neighbors) {
     //getLocation()
     //console.log(neighbors)
     
-    fitProjection()
+    mapSetup()
 }

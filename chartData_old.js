@@ -1,59 +1,23 @@
-function setupCharts(censusData){
-//    console.log(censusData)
-    setColorKey()
-    var formattedData = formatBarData(formatMatrixData())
-    for(var i in formattedData){
-        drawBarGraph(formattedData[i],i)
-    }
-}
-function setColorKey(){
-    var colorDictionary = {}
-    var areas = pub.actualNeighbors
-    var colors = pub.colors
-    for(var i in areas){
-        colorDictionary[areas[i]]=colors[i]
-    }
-    colorDictionary[areas[0]]="red"
-    pub.colorDictionary= colorDictionary
+function setMatrix(){
+    var width = window.innerWidth
+    var height = window.innerWidth
+    var center = [Math.round(pub.coordinates[1]*10000)/10000,Math.round(pub.coordinates[0]*10000)/10000]
+    
+   /// var svg = d3.select("#map").append("svg").attr("width",width).attr("height",height)
+   // drawBaseMap(width,height,center)
+    
+    fitProjection()
+    d
+    var formattedData = formatMatrixData()
+  //  var differenceData = getDifferences(formattedData)
+  //  drawDotMatrix(differenceData)
+    drawBarGraph(colorDictionary,formattedData)
 }
 
-function drawBarGraph(data,i){
-    
-    var gridSize = 25
-    var width = gridSize*(Object.keys(data.values).length+3)
-    
-    var height = 150
-    var chart = d3.select("#chart")
-        .append("svg").attr("width",width).attr("height",height)
-    
-    var yScale = d3.scaleLinear().domain([data.min,data.max]).range([10,height/2])
-    var sorted = data["values"].sort(function(a, b) {
-        return parseFloat(a.value) - parseFloat(b.value);
-    });
-//    console.log(sorted)
-    chart.append("text").text(getTitle(i)).attr("x",20).attr("y",20).attr("font-size",12)
-    chart.selectAll("rect")
-    .data(sorted)
-    .enter()
-    .append("rect")
-    .attr("x",function(d,i){return i*gridSize+gridSize})
-    .attr("y",function(d){//console.log(d); 
-        return height-yScale(d.value)-height/4})
-    .attr("width",gridSize-4)
-    .attr("height",function(d){return yScale(d.value)})
-    .attr("fill",function(d,i){return pub.colorDictionary[d.area.split("US")[1]]})
-    .attr("class",function(d){return d.area})
-        
-    chart.selectAll(".barLabel")
-        .data(sorted)
-        .enter()
-        .append("text")
-        .attr("class",function(d){return "barLabel "+d.area})
-        .text(function(d){return Math.round(d.value*100)/100})
-        .attr("x",function(d,i){return i*gridSize+gridSize+10})
-        .attr("y",height-height/4+4)
-        .attr("fill",function(d,i){return pub.colorDictionary[d.area.split("US")[1]]})
-        
+function drawBarGraph(colorDictionary,formattedData){
+    var gridSize = 40
+    var chart = d3.select("#chart").append("svg").attr("width",width).attr("height",height)
+    console.log(formattedData)
 }
 function drawDotMatrix(differenceData){
     var gridSize = 40
@@ -128,9 +92,9 @@ function drawDotMatrix(differenceData){
 }
 function formatMatrixData(){
     var doNotInclude = ["B01002000.5","B01002002","B01002003","B02001001","B02001006","B02001007","B02001008","B02001009","B02001010"]
-    var percentCodes = ["B23025004","B16002003","B16002002","B16002006","B16002009","B15003022","B15003023","B15003025","B02001002","B02001003","B02001004","B02001005","B08301002","B08301010","B08301021","B08301018","B08301019"]
+    var percentCodes = ["B23025004","B23025006","B16002003","B16002002","B16002006","B16002009","B15003022","B15003023","B15003025","B02001002","B02001003","B02001004","B02001005","B08301002","B08301010","B08301021","B08301018","B08301019"]
     var valueCodes = ["B19013001"]
-   // var neighbors = pub.allNeighbors[pub.censusTractId.split("US")[1]]    
+    var neighbors = pub.allNeighbors[pub.censusTractId.split("US")[1]]    
     var matrixDictionary = {}
     for(var d in pub["data"]["data"]){
         var area = d
@@ -153,31 +117,6 @@ function formatMatrixData(){
     }
     return matrixDictionary
 }
-
-function formatBarData(matrixData){
-    var firstGeoKey = Object.keys(matrixData)[0]
-    var allCodes = Object.keys(matrixData[firstGeoKey])
-    var dictionary = {}
-    for(var i in allCodes){
-        var code = allCodes[i]
-        dictionary[code]={}
-        dictionary[code]["values"]=[]
-        var min = 9999999999999
-        var max = 0
-        for(var a in matrixData){
-            var area = a
-            var value = matrixData[a][code]
-            if(value>max){max = value}
-            if(value<min){min = value}
-            dictionary[code]["values"].push({area:area,value:value})
-        }
-        dictionary[code]["max"]=max
-        dictionary[code]["min"]=min
-    }
-    return dictionary
-}
-
-
 function getDifferences(formattedData){
     var valueCodes = ["B01002001","B19013001"]
     var here = formattedData[pub.censusTractId]
@@ -344,7 +283,7 @@ function getPercentSum(codes,geoGroup){
 function getTitle(code){
     var table = code.substr(0, code.length -3)
     var tableTitle = getTableName(table)
-    var codeTitle = pub["data"].tables[table].columns[code].name.replace(":","").replace(" alone","").split("(")[0]    
+    var codeTitle = pub["data"].tables[table].columns[code].name    
    // return tableTitle+": "+codeTitle
      return codeTitle
 }

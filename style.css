@@ -33,6 +33,13 @@ body{
 #map{
     padding:0px;
     margin:0px;
+    width:50%;
+}
+#chart{
+    width:50%;
+    position:absolute;
+    top:0px;
+    right:0px;
 }
 #key{
     padding:20px;
@@ -40,7 +47,8 @@ body{
 }
 .percentLabel{font-size:24px;}
 .barLabel{
-    font-size:16px;
+    font-size:10px;
+    writing-mode: tb-rl;    
 }
 .axis text {
   font: 14px sans-serif;

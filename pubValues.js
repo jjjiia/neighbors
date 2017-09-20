@@ -15,7 +15,9 @@ var pub = {
     censusTractId:null,
     tables:"B02001,B01002,B19013,B15003,B08301,B23025,B16002",
     actualNeighborGeos:null,
-    centroid:null
+    centroid:null,
+    colors:["#459d3e","#e3e039","#657348","#82e03e","#bbd1a1","#9eb531","#79df77","#b6a75a","#d2e27a","#6d8635"],
+    colorDictionary:{}
 }
 
 var saveForLater = "C15010,B19055,B24080,B25004,B25006,B25034,B08134,B25035,B25041,B25065,B25069,B19053,B19059,B25061,C24030,B25081,B16004,"

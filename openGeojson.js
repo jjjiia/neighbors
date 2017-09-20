@@ -1,12 +1,10 @@
-function fitProjection(){
+function mapSetup(){
     var randomIndex = Math.round(Math.random()*Object.keys(pub.allNeighbors).length)-1
     var tempid = Object.keys(pub.allNeighbors)[randomIndex]
     
-    //var hereFile = "tract_geojson/"+pub.censusTractId.split("US")[1]+".json"
     var hereFile = "tract_geojson/"+tempid+".json"
     
-    console.log(hereFile)
-    var width = window.innerWidth
+    var width = window.innerWidth/2
     var height = window.innerHeight
     var svg = d3.select("#map").append("svg").attr('width',width).attr("height",height).append("g")
 
@@ -15,15 +13,19 @@ function fitProjection(){
     var colorDictionary = {}
     
     var neighbors = (tempid+","+pub.allNeighbors[tempid]).split(",")
-    console.log(neighbors)
-    var q = d3.queue();
+    pub.actualNeighbors = neighbors
+    var q = d3.queue();    
     
     for(var i in neighbors){
         console.log(neighbors[i])
         q=q.defer(d3.json, "tract_geojson/"+neighbors[i]+".json")
     }
     q.await(consolidateGeos);
+    
+   var formattedNeighbors = "14000US"+neighbors.join(",14000US")
+    getTracksInCounty(formattedNeighbors)
 }
+
 function consolidateGeos(error){
     if(error) { console.log(error); }
     pub.allNeighborGeos = {type:"FeatureCollection",features:[]}
@@ -39,7 +41,7 @@ function consolidateGeos(error){
 }
 function setProjection(){
         
-    var projection = d3.geoMercator().fitSize([d3.min([width,height]), d3.min([width,height])], pub.allNeighborGeos)
+    var projection = d3.geoMercator().fitSize([window.innerWidth/2,window.innerHeight], pub.allNeighborGeos)
     pub.projection = projection
 }
 function drawTracts(){
@@ -106,7 +108,7 @@ function drawBaseMap(){
     var path = d3.geoPath()
         .projection(projection);
 
-    var svg = d3.select("#map svg")
+    var svg = d3.select("#map svg g")
         .attr("width", width)
         .attr("height", height);
 
